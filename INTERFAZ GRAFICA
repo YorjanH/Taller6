@@ -1,0 +1,228 @@
+package com.mycompany.tallern6;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.*;
+public class TallerN6 extends JFrame implements ActionListener {
+    private JTextField nombreField, celularField;
+    private JButton guardarButton, actualizarButton, eliminarButton, leerButton;
+
+    public TallerN6() {
+        setTitle("Gestión de datos");
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        // Crear los componentes
+        JLabel nombreLabel = new JLabel("Nombre:");
+        nombreField = new JTextField(20);
+        JLabel celularLabel = new JLabel("Número de celular:");
+        celularField = new JTextField(20);
+
+        guardarButton = new JButton("Guardar");
+        actualizarButton = new JButton("Actualizar");
+        eliminarButton = new JButton("Eliminar");
+        leerButton = new JButton("Leer");
+
+        guardarButton.addActionListener(this);
+        actualizarButton.addActionListener(this);
+        eliminarButton.addActionListener(this);
+        leerButton.addActionListener(this);
+
+        // Crear el panel principal y el administrador de diseño GroupLayout
+        JPanel mainPanel = new JPanel();
+        GroupLayout layout = new GroupLayout(mainPanel);
+        mainPanel.setLayout(layout);
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
+
+        // Configurar el diseño horizontal
+        layout.setHorizontalGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addComponent(nombreLabel)
+                        .addComponent(celularLabel))
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addComponent(nombreField)
+                        .addComponent(celularField)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(guardarButton)
+                                .addComponent(actualizarButton)
+                                .addComponent(eliminarButton)
+                                .addComponent(leerButton)))
+        );
+
+        // Configurar el diseño vertical
+        layout.setVerticalGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                        .addComponent(nombreLabel)
+                        .addComponent(nombreField))
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                        .addComponent(celularLabel)
+                        .addComponent(celularField))
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                        .addComponent(guardarButton)
+                        .addComponent(actualizarButton)
+                        .addComponent(eliminarButton)
+                        .addComponent(leerButton))
+        );
+
+        // Agregar el panel principal a la ventana
+        add(mainPanel);
+
+        pack();
+        setLocationRelativeTo(null); // Centrar la ventana en la pantalla
+        setVisible(true);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == guardarButton) {
+            guardarDatos();
+        } else if (e.getSource() == actualizarButton) {
+            actualizarDatos();
+        } else if (e.getSource() == eliminarButton) {
+            eliminarDatos();
+        } else if (e.getSource() == leerButton) {
+            leerDatos();
+        }
+    }
+
+    private void guardarDatos() {
+        String nombre = nombreField.getText();
+        String celular = celularField.getText();
+
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter("datos.txt", true));
+            writer.append(nombre + "\n" + celular + "\n");
+            writer.close();
+            JOptionPane.showMessageDialog(this, "Datos guardados correctamente.");
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Error al guardar los datos.");
+            e.printStackTrace();
+        }
+
+        nombreField.setText("");
+        celularField.setText("");
+    }
+
+    private void actualizarDatos() {
+        String nombre = nombreField.getText();
+        String celular = celularField.getText();
+
+        try {
+            File archivo = new File("datos.txt");
+            File archivoTemp = new File("temp.txt");
+            BufferedReader reader = new BufferedReader(new FileReader(archivo));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(archivoTemp, true));
+
+            String linea;
+            while ((linea = reader.readLine()) != null) {
+                String nombreExistente = linea;
+                String celularExistente = reader.readLine();
+                if (nombre.equals(nombreExistente)) {
+                    writer.write(nombre + "\n" + celular + "\n");
+                } else {
+                    writer.write(nombreExistente + "\n" + celularExistente + "\n");
+                }
+            }
+
+            writer.close();
+            reader.close();
+
+            // Eliminar el archivo original y renombrar el archivo temporal
+            archivo.delete();
+            archivoTemp.renameTo(archivo);
+
+            JOptionPane.showMessageDialog(this, "Datos actualizados correctamente.");
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Error al actualizar los datos.");
+            e.printStackTrace();
+        }
+
+        nombreField.setText("");
+        celularField.setText("");
+    }
+
+    private void eliminarDatos() {
+        String nombre = nombreField.getText();
+
+    try {
+        File archivo = new File("datos.txt");
+        File archivoTemp = new File("temp.txt");
+        BufferedReader reader = new BufferedReader(new FileReader(archivo));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(archivoTemp));
+
+        String linea;
+        boolean eliminado = false;
+        while ((linea = reader.readLine()) != null) {
+            String nombreExistente = linea;
+            String celularExistente = reader.readLine();
+
+            if (nombre.equals(nombreExistente)) {
+                eliminado = true;
+            } else {
+                writer.write(nombreExistente + "\n" + celularExistente + "\n");
+            }
+        }
+
+        writer.close();
+        reader.close();
+
+        // Eliminar el archivo original y renombrar el archivo temporal
+        archivo.delete();
+        archivoTemp.renameTo(archivo);
+
+        if (eliminado) {
+            JOptionPane.showMessageDialog(this, "Datos eliminados correctamente.");
+        } else {
+            JOptionPane.showMessageDialog(this, "No se encontró el nombre en los datos.");
+        }
+    } catch (IOException e) {
+        JOptionPane.showMessageDialog(this, "Error al eliminar los datos.");
+        e.printStackTrace();
+    }
+
+    nombreField.setText("");
+    celularField.setText("");
+}
+
+    private void crearArchivo() {
+        File archivo = new File("datos.txt");
+        try {
+            if (archivo.createNewFile()) {
+                JOptionPane.showMessageDialog(this, "Archivo creado correctamente.");
+            } else {
+                JOptionPane.showMessageDialog(this, "El archivo ya existe.");
+            }
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Error al crear el archivo.");
+            e.printStackTrace();
+        }
+    }
+
+    private void leerDatos() {
+        File archivo = new File("datos.txt");
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(archivo));
+            String linea;
+            while ((linea = reader.readLine()) != null) {
+                String nombre = linea;
+                String celular = reader.readLine();
+                // Aquí puedes procesar los datos leídos como desees
+                System.out.println("Nombre: " + nombre);
+                System.out.println("Celular: " + celular);
+            }
+            reader.close();
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Error al leer el archivo.");
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            TallerN6 interfaz = new TallerN6();
+            interfaz.crearArchivo();
+            interfaz.leerDatos();
+        });
+    }
+}
